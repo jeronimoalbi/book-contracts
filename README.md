@@ -44,3 +44,17 @@ gnokey maketx call KEY_NAME \
     --chainid dev \
     --remote localhost:26657
 ```
+
+Add realm for the `PAGE` token:
+
+```sh
+gnokey maketx addpkg KEY_NAME \
+    --pkgpath "gno.land/r/libro/page" \
+    --pkgdir r/libro/page \
+    --deposit 100000000ugnot \
+    --gas-fee 1000000ugnot \
+    --gas-wanted 2000000 \
+    --broadcast true \
+    --chainid dev \
+    --remote localhost:26657
+```
