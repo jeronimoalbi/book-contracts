@@ -22,23 +22,23 @@ type Collection struct {
 	books avl.Tree
 }
 
-func (c Collection) ID() CollectionID {
-	return c.id
+func (self Collection) ID() CollectionID {
+	return self.id
 }
 
-func (c Collection) Add(b Book) {
+func (self Collection) Add(b Book) {
 	bID := b.ID()
-	c.books.Set(bID.String(), &b)
+	self.books.Set(bID.String(), &b)
 }
 
-func (c Collection) Remove(id BookID) (b Book, found bool) {
-	return c.books.Remove(id.String())
+func (self Collection) Remove(id BookID) (b Book, found bool) {
+	return self.books.Remove(id.String())
 }
 
-func (c Collection) Render() string {
+func (self Collection) Render() string {
 	var builder strings.Builder
 
-	c.books.Iterate("", "", func(n *avl.Node) bool {
+	self.books.Iterate("", "", func(n *avl.Node) bool {
 		b := n.Value().(*Book)
 		builder.WriteString(b.Render())
 		builder.WriteRune('\n')

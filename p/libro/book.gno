@@ -24,18 +24,18 @@ type Book struct {
 	title string
 }
 
-func (b Book) ID() BookID {
-	return b.id
+func (self Book) ID() BookID {
+	return self.id
 }
 
-func (b Book) Title() string {
-	return b.title
+func (self Book) Title() string {
+	return self.title
 }
 
-func (b *Book) SetTitle(title string) {
-	b.title = title
+func (self *Book) SetTitle(title string) {
+	self.title = title
 }
 
-func (b Book) Render() string {
-	return ufmt.Sprintf("[#%s] %s", b.id.String(), b.title)
+func (self Book) Render() string {
+	return ufmt.Sprintf("[#%s] %s", self.id.String(), self.title)
 }
