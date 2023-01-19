@@ -37,7 +37,6 @@ gnokey maketx call KEY_NAME \
     --pkgpath "gno.land/r/libro/collection" \
     --func "AddBook" \
     --args "The Hitchhiker's Guide to the Galaxy" \
-    --args "the-hitchhikers-guide-to-the-galaxy" \
     --gas-fee 1000000ugnot \
     --gas-wanted 2000000 \
     --broadcast true \

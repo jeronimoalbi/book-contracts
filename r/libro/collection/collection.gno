@@ -44,14 +44,14 @@ func getCollectionByOwner(owner std.Address) (*libro.Collection, bool) {
 	return getCollection(id.(libro.CollectionID))
 }
 
-func AddBook(title, slug string) {
+func AddBook(title string) {
 	owner := std.GetOrigCaller()
 	collection, exists := getCollectionByOwner(owner)
 	if !exists {
 		collection = libro.NewCollection(genCollectionID())
 	}
 
-	book := libro.NewBook(genBookID(), title, slug)
+	book := libro.NewBook(genBookID(), title)
 	collection.Add(book)
 
 	if !exists {
