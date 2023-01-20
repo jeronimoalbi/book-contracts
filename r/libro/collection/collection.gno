@@ -59,12 +59,15 @@ func addBookToOwnerCollection(owner std.Address, book *libro.Book) {
 	}
 }
 
-func AddBook(title string) {
+// Add adds a new book to current account's collection.
+func Add(title string) {
 	book := libro.NewBook(genBookID(), title)
 	addBookToOwnerCollection(book)
 }
 
-func RemoveBook(id libro.BookID) {
+// Burn removes a book from current account's collection.
+// This is a one way operation, once a book is burned it can't be recovered.
+func Burn(id libro.BookID) {
 	owner := std.GetOrigCaller()
 	collection, found := getCollectionByOwner(owner)
 	if !found {
@@ -76,6 +79,7 @@ func RemoveBook(id libro.BookID) {
 	}
 }
 
+// Transfer a book from current account's collection to a different account.
 func Transfer(id libro.BookID, to std.Address) {
 	owner := std.GetOrigCaller()
 	if owner == to {
@@ -95,6 +99,7 @@ func Transfer(id libro.BookID, to std.Address) {
 	addBookToOwnerCollection(to)
 }
 
+// Render renders a book collection.
 func Render(path string) string {
 	parts := strings.Split(path, "/")
 	c := len(parts)

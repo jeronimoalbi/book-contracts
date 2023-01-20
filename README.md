@@ -35,7 +35,7 @@ Add a book to start the collection:
 ```sh
 gnokey maketx call KEY_NAME \
     --pkgpath "gno.land/r/libro/collection" \
-    --func "AddBook" \
+    --func "Add" \
     --args "The Hitchhiker's Guide to the Galaxy" \
     --gas-fee 1000000ugnot \
     --gas-wanted 2000000 \
