@@ -1,3 +1,3 @@
-module github.com/jeronimoalbi/librocontracts
+module github.com/jeronimoalbi/book-contracts
 
 go 1.19

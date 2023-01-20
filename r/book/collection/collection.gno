@@ -6,48 +6,48 @@ import (
 	"strings"
 
 	"gno.land/p/demo/avl"
-	"gno.land/p/demo/libro" // NOTE: Whitelisted package prefix
+	"gno.land/p/demo/book" // NOTE: Whitelisted package prefix
 )
 
 var (
 	bookCtr            uint64
 	collectionCtr      uint64
-	bookCollections    avl.Tree // libro.CollectionID -> *libro.Collection
-	collectionsByOwner avl.Tree // std.Address -> libro.CollectionID
+	bookCollections    avl.Tree // book.CollectionID -> *book.Collection
+	collectionsByOwner avl.Tree // std.Address -> book.CollectionID
 )
 
-func genCollectionID() libro.CollectionID {
+func genCollectionID() book.CollectionID {
 	collectionCtr++
-	return libro.CollectionID(collectionCtr)
+	return book.CollectionID(collectionCtr)
 }
 
-func genBookID() libro.BookID {
+func genBookID() book.ID {
 	bookCtr++
-	return libro.BookID(bookCtr)
+	return book.ID(bookCtr)
 }
 
-func getCollection(id libro.CollectionID) (*libro.Collection, bool) {
+func getCollection(id book.CollectionID) (*book.Collection, bool) {
 	v, found := bookCollections.Get(id.String())
 	if !found {
 		return nil, false
 	}
 
-	return v.(*libro.Collection), true
+	return v.(*book.Collection), true
 }
 
-func getCollectionByOwner(owner std.Address) (*libro.Collection, bool) {
+func getCollectionByOwner(owner std.Address) (*book.Collection, bool) {
 	v, found := collectionsByOwner.Get(owner.String())
 	if !found {
 		return nil, false
 	}
 
-	return getCollection(v.(libro.CollectionID))
+	return getCollection(v.(book.CollectionID))
 }
 
-func addBookToOwnerCollection(owner std.Address, book *libro.Book) {
+func addBookToOwnerCollection(owner std.Address, book *book.Book) {
 	collection, exists := getCollectionByOwner(owner)
 	if !exists {
-		collection = libro.NewCollection(genCollectionID())
+		collection = book.NewCollection(genCollectionID())
 	}
 
 	collection.Add(book)
@@ -61,13 +61,13 @@ func addBookToOwnerCollection(owner std.Address, book *libro.Book) {
 
 // Add adds a new book to current account's collection.
 func Add(title string) {
-	book := libro.NewBook(genBookID(), title)
+	book := book.NewBook(genBookID(), title)
 	addBookToOwnerCollection(book)
 }
 
 // Burn removes a book from current account's collection.
 // This is a one way operation, once a book is burned it can't be recovered.
-func Burn(id libro.BookID) {
+func Burn(id book.ID) {
 	owner := std.GetOrigCaller()
 	collection, found := getCollectionByOwner(owner)
 	if !found {
@@ -80,7 +80,7 @@ func Burn(id libro.BookID) {
 }
 
 // Transfer a book from current account's collection to a different account.
-func Transfer(id libro.BookID, to std.Address) {
+func Transfer(id book.ID, to std.Address) {
 	owner := std.GetOrigCaller()
 	if owner == to {
 		panic("transfer to the current owner is not allowed")
@@ -111,7 +111,7 @@ func Render(path string) string {
 			return "Invalid collection ID"
 		}
 
-		cID := libro.CollectionID(id)
+		cID := book.CollectionID(id)
 		collection, found := getCollection(cID)
 		if !found {
 			return "Book collection is empty"

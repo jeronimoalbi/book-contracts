@@ -1,4 +1,4 @@
-package libro
+package book
 
 import (
 	"strconv"

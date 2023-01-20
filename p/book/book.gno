@@ -1,4 +1,4 @@
-package libro
+package book
 
 import (
 	"strconv"
@@ -6,13 +6,13 @@ import (
 	"gno.land/p/demo/ufmt"
 )
 
-type BookID uint64
+type ID uint64
 
-func (id BookID) String() string {
+func (id ID) String() string {
 	return strconv.Itoa(int(id))
 }
 
-func NewBook(id BookID, title string) Book {
+func NewBook(id ID, title string) Book {
 	return Book{
 		id:    id,
 		title: title,
@@ -20,11 +20,11 @@ func NewBook(id BookID, title string) Book {
 }
 
 type Book struct {
-	id    BookID
+	id    ID
 	title string
 }
 
-func (self Book) ID() BookID {
+func (self Book) ID() ID {
 	return self.id
 }
 

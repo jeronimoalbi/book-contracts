@@ -9,8 +9,8 @@ all: install
 install-package:
 	@echo Adding package...
 	@gnokey maketx addpkg $(KEY_NAME) \
-			--pkgpath "gno.land/p/demo/libro" \
-			--pkgdir p/libro \
+			--pkgpath "gno.land/p/demo/book" \
+			--pkgdir p/book \
 			--deposit 100000000ugnot \
 			--gas-fee 1000000ugnot \
 			--gas-wanted 2000000 \
@@ -22,8 +22,8 @@ install-package:
 install-collection:
 	@echo Adding collection realm...
 	@gnokey maketx addpkg $(KEY_NAME) \
-			--pkgpath "gno.land/r/libro/collection" \
-			--pkgdir r/libro/collection \
+			--pkgpath "gno.land/r/book/collection" \
+			--pkgdir r/book/collection \
 			--deposit 100000000ugnot \
 			--gas-fee 1000000ugnot \
 			--gas-wanted 2000000 \
@@ -35,8 +35,8 @@ install-collection:
 install-token:
 	@echo Adding PAGE token...
 	@gnokey maketx addpkg $(KEY_NAME) \
-			--pkgpath "gno.land/r/libro/page" \
-			--pkgdir r/libro/page \
+			--pkgpath "gno.land/r/book/page" \
+			--pkgdir r/book/page \
 			--deposit 100000000ugnot \
 			--gas-fee 1000000ugnot \
 			--gas-wanted 2000000 \
@@ -50,7 +50,7 @@ install: install-package install-collection install-token
 populate:
 	@echo Adding example book to the collection
 	@gnokey maketx call $(KEY_NAME) \
-			--pkgpath "gno.land/r/libro/collection" \
+			--pkgpath "gno.land/r/book/collection" \
 			--func "Add" \
 			--args "The Hitchhiker's Guide to the Galaxy" \
 			--gas-fee 1000000ugnot \
