@@ -6,6 +6,7 @@ import (
 	"gno.land/p/demo/ufmt"
 )
 
+// ID defines the book ID type.
 type ID uint64
 
 func (id ID) String() string {

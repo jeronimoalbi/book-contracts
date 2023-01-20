@@ -7,6 +7,7 @@ import (
 	"gno.land/p/demo/avl"
 )
 
+// CollectionID defines the book collection ID type.
 type CollectionID uint64
 
 func (id CollectionID) String() string {
@@ -17,6 +18,7 @@ func NewCollection(id CollectionID) *Collection {
 	return &Collection{id: id}
 }
 
+// Collection contains a list of books.
 type Collection struct {
 	id    CollectionID
 	books avl.Tree
@@ -48,7 +50,6 @@ func (self Collection) Render() string {
 		b := n.Value().(*Book)
 		builder.WriteString(b.Render())
 		builder.WriteRune('\n')
-
 		return false
 	})
 
