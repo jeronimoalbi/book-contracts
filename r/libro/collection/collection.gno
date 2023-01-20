@@ -44,14 +44,12 @@ func getCollectionByOwner(owner std.Address) (*libro.Collection, bool) {
 	return getCollection(v.(libro.CollectionID))
 }
 
-func AddBook(title string) {
-	owner := std.GetOrigCaller()
+func addBookToOwnerCollection(owner std.Address, book *libro.Book) {
 	collection, exists := getCollectionByOwner(owner)
 	if !exists {
 		collection = libro.NewCollection(genCollectionID())
 	}
 
-	book := libro.NewBook(genBookID(), title)
 	collection.Add(book)
 
 	if !exists {
@@ -59,6 +57,11 @@ func AddBook(title string) {
 		bookCollections.Set(cID, collection)
 		collectionsByOwner.Set(owner.String(), cID)
 	}
+}
+
+func AddBook(title string) {
+	book := libro.NewBook(genBookID(), title)
+	addBookToOwnerCollection(book)
 }
 
 func RemoveBook(id libro.BookID) {
@@ -71,6 +74,25 @@ func RemoveBook(id libro.BookID) {
 	if _, found = collection.Remove(id); !found {
 		panic("book not found")
 	}
+}
+
+func Transfer(id libro.BookID, to std.Address) {
+	owner := std.GetOrigCaller()
+	if owner == to {
+		panic("transfer to the current owner is not allowed")
+	}
+
+	collection, found := getCollectionByOwner(owner)
+	if !found {
+		panic("book collection is empty")
+	}
+
+	book, found := collection.Remove(id)
+	if !found {
+		panic("book not found")
+	}
+
+	addBookToOwnerCollection(to)
 }
 
 func Render(path string) string {
