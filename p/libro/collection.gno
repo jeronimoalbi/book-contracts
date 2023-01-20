@@ -31,8 +31,14 @@ func (self Collection) Add(b Book) {
 	self.books.Set(bID.String(), &b)
 }
 
-func (self Collection) Remove(id BookID) (b Book, found bool) {
-	return self.books.Remove(id.String())
+func (self Collection) Remove(id BookID) (*Book, bool) {
+	v, found := self.books.Remove(id.String())
+	return v.(*Book), found
+}
+
+func (self Collection) Get(id BookID) (*Book, bool) {
+	v, found := self.books.Get(id.String())
+	return v.(*Book), found
 }
 
 func (self Collection) Render() string {

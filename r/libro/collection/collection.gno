@@ -27,21 +27,21 @@ func genBookID() libro.BookID {
 }
 
 func getCollection(id libro.CollectionID) (*libro.Collection, bool) {
-	c, found := bookCollections.Get(id.String())
+	v, found := bookCollections.Get(id.String())
 	if !found {
 		return nil, false
 	}
 
-	return c.(*libro.Collection), true
+	return v.(*libro.Collection), true
 }
 
 func getCollectionByOwner(owner std.Address) (*libro.Collection, bool) {
-	id, found := collectionsByOwner.Get(owner.String())
+	v, found := collectionsByOwner.Get(owner.String())
 	if !found {
 		return nil, false
 	}
 
-	return getCollection(id.(libro.CollectionID))
+	return getCollection(v.(libro.CollectionID))
 }
 
 func AddBook(title string) {
