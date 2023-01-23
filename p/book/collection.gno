@@ -28,6 +28,10 @@ func (self Collection) ID() CollectionID {
 	return self.id
 }
 
+func (self Collection) Has(id BookID) bool {
+	return self.books.Has(id.String())
+}
+
 func (self Collection) Add(b Book) {
 	bID := b.ID()
 	self.books.Set(bID.String(), &b)
