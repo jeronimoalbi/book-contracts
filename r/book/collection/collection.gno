@@ -130,8 +130,8 @@ func genBookID() book.ID {
 	return book.ID(bookCtr)
 }
 
-func getCollection(id book.CollectionID) (*book.Collection, bool) {
-	v, found := bookCollections.Get(id.String())
+func getCollection(cid book.CollectionID) (*book.Collection, bool) {
+	v, found := bookCollections.Get(cid.String())
 	if !found {
 		return nil, false
 	}
@@ -166,9 +166,9 @@ func addBookToOwnerCollection(owner std.Address, book *book.Book) {
 	collection.Add(book)
 
 	if !exists {
-		cID := collection.ID().String()
-		bookCollections.Set(cID, collection)
-		collectionsByOwner.Set(owner.String(), cID)
+		cid := collection.ID().String()
+		bookCollections.Set(cid, collection)
+		collectionsByOwner.Set(owner.String(), cid)
 	}
 }
 
