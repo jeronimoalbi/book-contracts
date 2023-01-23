@@ -60,7 +60,7 @@ func Transfer(id book.ID, to std.Address) {
 	addBookToOwnerCollection(to)
 }
 
-// CheckAvailable checks if a book has been lent.
+// CheckAvailable checks if a book can be lent.
 func CheckAvailable(id book.ID) bool {
 	return !lentBooks.Has(id.String())
 }
