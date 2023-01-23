@@ -96,6 +96,16 @@ func Return(id book.ID) {
 	lentBooks.Remove(id.String())
 }
 
+// GetBorrower returns borrower's address.
+func GetBorrower(id book.ID) string {
+	borrower, found := getBorrower(id)
+	if !found {
+		panic("book is not lent")
+	}
+
+	return borrower.String()
+}
+
 // Render renders a book collection.
 func Render(path string) string {
 	parts := strings.Split(path, "/")
