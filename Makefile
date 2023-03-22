@@ -32,7 +32,20 @@ install-token:
 			--remote localhost:26657 \
 			--insecure-password-stdin <<< "$(PASSWORD)"
 
-install: install-package install-collection install-token
+install-club:
+	@echo Adding club realm...
+	@gnokey maketx addpkg $(KEY_NAME) \
+			--pkgpath "gno.land/r/book/club" \
+			--pkgdir r/book/club \
+			--deposit 100000000ugnot \
+			--gas-fee 1000000ugnot \
+			--gas-wanted 2000000 \
+			--broadcast true \
+			--chainid dev \
+			--remote localhost:26657 \
+			--insecure-password-stdin <<< "$(PASSWORD)"
+
+install: install-collection install-token install-club
 
 populate:
 	@echo Adding example book to the collection
