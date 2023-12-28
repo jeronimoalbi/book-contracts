@@ -7,7 +7,6 @@ KEY_PASSWORD ?=
 # Remote gno.land node address
 REMOTE ?= localhost:26657
 
-.PHONY: help
 help:
 	@echo "Available make commands:"
 	@cat Makefile | grep '^[a-z][^:]*:' | cut -d: -f1 | sort | sed 's/^/  /'
