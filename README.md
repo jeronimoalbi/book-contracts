@@ -2,14 +2,14 @@
 
 ## Install
 
-To deploy the contract to the blockchain run:
+Deploy the package and realms to the blockchain:
 
 ```sh
-make install
+make KEY_NAME=your-gno-key-name install
 ```
 
-To add a book to start the collection:
+Add a book to start the collection:
 
 ```sh
-make populate
+make KEY_NAME=your-gno-key-name populate
 ```
