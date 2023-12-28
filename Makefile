@@ -37,19 +37,19 @@ install-realm-library:
 			--remote="$(REMOTE)" \
 			$(KEY_NAME)
 
-# install-token:
-# 	@echo Adding PAGE token...
-# 	@gnokey maketx addpkg \
-# 			--pkgpath="gno.land/r/book/page" \
-# 			--pkgdir=r/book/page \
-# 			--deposit="1ugnot" \
-# 			--gas-fee="1ugnot" \
-# 			--gas-wanted="2000000" \
-# 			--broadcast="true" \
-# 			--chainid="dev" \
-# 			--remote="$(REMOTE)" \
-# 			$(KEY_NAME)
-#
+install-realm-page:
+	@echo Adding realm for PAGE token...
+	@gnokey maketx addpkg \
+			--pkgpath="gno.land/r/demo/jeronimoalbi/page" \
+			--pkgdir=r/demo/jeronimoalbi/page \
+			--deposit="1ugnot" \
+			--gas-fee="1ugnot" \
+			--gas-wanted="2000000" \
+			--broadcast="true" \
+			--chainid="dev" \
+			--remote="$(REMOTE)" \
+			$(KEY_NAME)
+
 # install-club:
 # 	@echo Adding club realm...
 # 	@gnokey maketx addpkg \
@@ -65,7 +65,7 @@ install-realm-library:
 
 install-packages: install-package-book
 
-install-realms: install-realm-library
+install-realms: install-realm-library install-realm-page
 
 install: install-packages install-realms
 
