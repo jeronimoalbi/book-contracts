@@ -7,8 +7,8 @@ import (
 )
 
 // NewCollection creates a new book collection.
-func NewCollection() Collection {
-	return Collection{
+func NewCollection() *Collection {
+	return &Collection{
 		books: avl.NewTree(),
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"gno.land/p/demo/jeronimoalbi/book"
 )
 
-// New creates a new library for book collections.
+// New creates a new library.
 func New() Library {
 	return Library{
 		collections: avl.NewTree(),

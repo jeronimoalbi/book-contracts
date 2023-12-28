@@ -4,6 +4,11 @@ KEY_NAME ?= test
 # Remote gno.land node address
 REMOTE ?= localhost:26657
 
+.PHONY: help
+help:
+	@echo "Available make commands:"
+	@cat Makefile | grep '^[a-z][^:]*:' | cut -d: -f1 | sort | sed 's/^/  /'
+
 all: install
 
 install-package-book:
@@ -19,11 +24,11 @@ install-package-book:
 			--remote="$(REMOTE)" \
 			$(KEY_NAME)
 
-install-package-library:
-	@echo Adding library package...
+install-realm-library:
+	@echo Adding library realm...
 	gnokey maketx addpkg \
-			--pkgpath="gno.land/p/demo/jeronimoalbi/library" \
-			--pkgdir="p/demo/jeronimoalbi/library" \
+			--pkgpath="gno.land/r/demo/jeronimoalbi/library" \
+			--pkgdir="r/demo/jeronimoalbi/library" \
 			--deposit="1ugnot" \
 			--gas-fee="1ugnot" \
 			--gas-wanted="2000000" \
@@ -32,55 +37,42 @@ install-package-library:
 			--remote="$(REMOTE)" \
 			$(KEY_NAME)
 
-install-collection:
-	@echo Adding collection realm...
-	gnokey maketx addpkg \
-			--pkgpath="gno.land/r/book/collection" \
-			--pkgdir="r/book/collection" \
-			--deposit="1ugnot" \
-			--gas-fee="1ugnot" \
-			--gas-wanted="2000000" \
-			--broadcast="true" \
-			--chainid="dev" \
-			--remote="$(REMOTE)" \
-			$(KEY_NAME)
+# install-token:
+# 	@echo Adding PAGE token...
+# 	@gnokey maketx addpkg \
+# 			--pkgpath="gno.land/r/book/page" \
+# 			--pkgdir=r/book/page \
+# 			--deposit="1ugnot" \
+# 			--gas-fee="1ugnot" \
+# 			--gas-wanted="2000000" \
+# 			--broadcast="true" \
+# 			--chainid="dev" \
+# 			--remote="$(REMOTE)" \
+# 			$(KEY_NAME)
+#
+# install-club:
+# 	@echo Adding club realm...
+# 	@gnokey maketx addpkg \
+# 			--pkgpath="gno.land/r/book/club" \
+# 			--pkgdir=r/book/club \
+# 			--deposit="1ugnot" \
+# 			--gas-fee="1ugnot" \
+# 			--gas-wanted="2000000" \
+# 			--broadcast="true" \
+# 			--chainid="dev" \
+# 			--remote="$(REMOTE)" \
+# 			$(KEY_NAME)
 
-install-token:
-	@echo Adding PAGE token...
-	@gnokey maketx addpkg \
-			--pkgpath="gno.land/r/book/page" \
-			--pkgdir=r/book/page \
-			--deposit="1ugnot" \
-			--gas-fee="1ugnot" \
-			--gas-wanted="2000000" \
-			--broadcast="true" \
-			--chainid="dev" \
-			--remote="$(REMOTE)" \
-			$(KEY_NAME)
+install-packages: install-package-book
 
-install-club:
-	@echo Adding club realm...
-	@gnokey maketx addpkg \
-			--pkgpath="gno.land/r/book/club" \
-			--pkgdir=r/book/club \
-			--deposit="1ugnot" \
-			--gas-fee="1ugnot" \
-			--gas-wanted="2000000" \
-			--broadcast="true" \
-			--chainid="dev" \
-			--remote="$(REMOTE)" \
-			$(KEY_NAME)
+install-realms: install-realm-library
 
-install-package: install-package-book install-package-library
+install: install-packages install-realms
 
-install-realm: install-collection install-token install-club
-
-install: install-package install-realm
-
-populate:
-	@echo Adding example book to a collection
+populate-library:
+	@echo Adding example book to the library
 	@gnokey maketx call \
-			--pkgpath="gno.land/r/book/collection" \
+			--pkgpath="gno.land/r/demo/jeronimoalbi/library" \
 			--func="Add" \
 			--args="The Hitchhiker's Guide to the Galaxy" \
 			--gas-fee="1ugnot" \
@@ -89,3 +81,5 @@ populate:
 			--chainid="dev" \
 			--remote="$(REMOTE)" \
 			$(KEY_NAME)
+
+populate: populate-library

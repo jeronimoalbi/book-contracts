@@ -1,6 +1,10 @@
-package collection
+package library
 
-import "std"
+import (
+	"std"
+
+	"gno.land/p/demo/jeronimoalbi/book"
+)
 
 var (
 	bookCtr uint64
@@ -8,7 +12,7 @@ var (
 )
 
 func init() {
-	library = Library{}
+	library = New()
 }
 
 // Add adds a new book to current account's collection.
@@ -16,33 +20,33 @@ func Add(title string) uint64 {
 	owner := std.GetOrigCaller()
 	collection, found := library.GetCollection(owner)
 	if !found {
-		collection = &Collection{}
-		library.Add(owner, collection)
+		collection = book.NewCollection()
+		library.AddCollection(owner, collection)
 	}
 
-	book := NewBook(genBookID(), title)
-	collection.Add(book)
+	newBook := book.New(genBookID(), title)
+	collection.Add(newBook)
 
-	return uint64(book.ID())
+	return uint64(newBook.ID())
 }
 
 // Burn removes a book from current account's collection.
 // This is a one way operation, once a book is burned it can't be recovered.
-func Burn(bookID BookID) {
+func Burn(id book.ID) {
 	owner := std.GetOrigCaller()
 	collection, found := library.GetCollection(owner)
 	if !found {
 		panic("book collection is empty")
 	}
 
-	if _, found = collection.Remove(bookID); !found {
+	if _, found = collection.Remove(id); !found {
 		panic("book not found")
 	}
 }
 
 // Transfer a book from current account's collection to a different account.
-func Transfer(newOwner std.Address, bookID BookID) {
-	assertBookIsAvailable(bookID)
+func Transfer(newOwner std.Address, id book.ID) {
+	assertBookIsAvailable(id)
 
 	owner := std.GetOrigCaller()
 	if owner == newOwner {
@@ -54,53 +58,53 @@ func Transfer(newOwner std.Address, bookID BookID) {
 		panic("book collection is empty")
 	}
 
-	book, found := collection.Remove(bookID)
+	currentBook, found := collection.Remove(id)
 	if !found {
 		panic("book not found")
 	}
 
 	collection, found = library.GetCollection(newOwner)
 	if !found {
-		collection = &Collection{}
-		library.Add(newOwner, collection)
+		collection = book.NewCollection()
+		library.AddCollection(newOwner, collection)
 	}
 
-	collections.Add(book)
+	collection.Add(currentBook)
 }
 
 // Lend lends a book from current account's collection.
-func Lend(borrower std.Address, bookID BookID) {
-	assertBookIsAvailable(bookID)
+func Lend(borrower std.Address, id book.ID) {
+	assertBookIsAvailable(id)
 
 	owner := std.GetOrigCaller()
-	if err := library.Lend(owner, borrower, bookID); err != nil {
+	if err := library.Lend(owner, borrower, id); err != nil {
 		panic(err)
 	}
 }
 
 // Return returns a book to its owner's collection.
-func Return(bookID BookID) {
-	if err := Library.Return(bookID); err != nil {
+func Return(id book.ID) {
+	if err := library.Return(id); err != nil {
 		panic(err)
 	}
 }
 
 // GetBorrower returns borrower's address.
-func GetBorrower(bookID BookID) string {
-	borrower, found := library.GetBorrower(bookID)
+func GetBorrower(id book.ID) string {
+	borrower, found := library.GetBorrower(id)
 	if !found {
 		panic("book is not lent")
 	}
 	return borrower.String()
 }
 
-func genBookID() BookID {
+func genBookID() book.ID {
 	bookCtr++
-	return BookID(bookCtr)
+	return book.ID(bookCtr)
 }
 
-func assertBookIsAvailable(bookID BookID) {
-	if !library.IsBookAvailable(bookID) {
+func assertBookIsAvailable(id book.ID) {
+	if library.IsLent(id) {
 		panic("book is lent")
 	}
 }

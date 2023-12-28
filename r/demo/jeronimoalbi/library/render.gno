@@ -1,8 +1,11 @@
-package collection
+package library
 
 import (
+	"std"
 	"strconv"
 	"strings"
+
+	"gno.land/p/demo/jeronimoalbi/book"
 )
 
 // Render renders a book collection.
@@ -12,17 +15,11 @@ func Render(path string) string {
 
 	switch {
 	case c == 1:
-		id, err := strconv.Atoi(parts[0])
-		if err != nil {
-			return "Invalid collection ID"
-		}
-
-		cID := ID(id)
-		collection, found := getCollection(cID)
+		address := std.Address(parts[0])
+		collection, found := library.GetCollection(address)
 		if !found {
 			return "Book collection is empty"
 		}
-
 		return collection.Render()
 	default:
 		return "Not Found"
