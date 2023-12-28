@@ -1,25 +1,27 @@
-package club
+package bookclub
 
 import (
 	"std"
 
 	"gno.land/p/demo/avl"
-	"gno.land/r/book/collection"
+	"gno.land/p/demo/jeronimoalbi/book"
+
+	"gno.land/r/demo/jeronimoalbi/library"
 )
 
-var agreements avl.Tree // collection.BookID -> *Agreement
+var agreements avl.Tree // Book's book.ID -> *Agreement
 
 // IsBorrowed checks if a book is currently borrowed.
-func IsBorrowed(id collection.BookID) bool {
-	return agreements.Has(id.String())
+func IsBorrowed(bookID book.ID) bool {
+	return agreements.Has(bookID.String())
 }
 
 // Lend allows book owners to lend a book to a borrower for a period of time.
 // Both the lender and the borrower must transfer a deposit which will be returned
 // to each one when the book is returned to its owner.
-func Lend(id collection.BookID, borrower std.Address, days uint64, deposit int64) {
+func Lend(bookID book.ID, borrower std.Address, days uint64, deposit int64) {
 	std.AssertOriginCall()
-	assertBookIsAvailable(id)
+	assertBookIsAvailable(bookID)
 
 	// TODO: Get the sent amount instead of automatically transfering to contract address ?
 	//       (Same for Borrow)
@@ -33,18 +35,18 @@ func Lend(id collection.BookID, borrower std.Address, days uint64, deposit int64
 
 	// Create the book lend agreement
 	agreement := NewAgreement(lender, borrower, days, deposit)
-	agreements.Set(id.String(), agreement)
+	agreements.Set(bookID.String(), agreement)
 
 	// Lend the book to this contract
-	collection.Lend(id, pkgAddr)
+	library.Lend(pkgAddr, bookID)
 }
 
 // Borrow allows book borrowers to borrow a book that was previously lent to them.
 // At this point is when the borrower deposits the agreed amount for borrowing the book.
-func Borrow(id collection.BookID) {
+func Borrow(bookID book.ID) {
 	std.AssertOriginCall()
 
-	agreement, found := getAgreement(id)
+	agreement, found := getAgreement(bookID)
 	if !found {
 		panic("book owner didn't agree to lend the book yet")
 	}
@@ -71,10 +73,10 @@ func Borrow(id collection.BookID) {
 }
 
 // Returns allows book borrowers to return a borrowed book.
-func Return(id collection.BookID) {
+func Return(bookID book.ID) {
 	std.AssertOriginCall()
 
-	agreement, found := getAgreement(id)
+	agreement, found := getAgreement(bookID)
 	if !found || !agreement.IsBorrowed() {
 		panic("book is not borrowed")
 	}
@@ -94,10 +96,10 @@ func Return(id collection.BookID) {
 }
 
 // Receive allows book lenders to receive a lent book.
-func Receive(id collection.BookID) {
+func Receive(bookID book.ID) {
 	std.AssertOriginCall()
 
-	agreement, found := getAgreement(id)
+	agreement, found := getAgreement(bookID)
 	if !found || !agreement.IsBorrowed() {
 		panic("book is not lent")
 	}
@@ -108,8 +110,8 @@ func Receive(id collection.BookID) {
 	}
 
 	// Close the agreement and return the book to the owner's collection
-	agreements.Remove(id.String())
-	collection.Return(id)
+	agreements.Remove(bookID.String())
+	library.Return(bookID)
 
 	// Return the deposit amounts to the lender and the borrower
 	pkgAddr := std.GetOrigPkgAddr()
@@ -123,10 +125,10 @@ func Receive(id collection.BookID) {
 // Book is transfered to the borrowers's collection during this process making the borrower the
 // current owner of the book.
 // The claimed deposit includes both the lender and borrower deposit amounts.
-func ClaimDeposits(id collection.BookID) {
+func ClaimDeposits(bookID book.ID) {
 	std.AssertOriginCall()
 
-	agreement, found := getAgreement(id)
+	agreement, found := getAgreement(bookID)
 	if !found || !agreement.IsBorrowed() {
 		panic("book is not lent")
 	}
@@ -141,7 +143,7 @@ func ClaimDeposits(id collection.BookID) {
 	}
 
 	// Transfer book to the borrower's collection
-	collection.Transfer(id, agreement.Borrower())
+	library.Transfer(agreement.Borrower(), bookID)
 
 	// Transfer the total amount deposited in the agreement to the lender
 	pkgAddr := std.GetOrigPkgAddr()
@@ -151,8 +153,8 @@ func ClaimDeposits(id collection.BookID) {
 }
 
 // GetLender returns the book owner's address.
-func GetLender(id collection.BookID) string {
-	agreement, found := getAgreement(id)
+func GetLender(bookID book.ID) string {
+	agreement, found := getAgreement(bookID)
 	if !found || !agreement.IsBorrowed() {
 		panic("book is not lent")
 	}
@@ -161,8 +163,8 @@ func GetLender(id collection.BookID) string {
 }
 
 // GetBorrower returns the book borrower's address.
-func GetBorrower(id collection.BookID) string {
-	agreement, found := getAgreement(id)
+func GetBorrower(bookID book.ID) string {
+	agreement, found := getAgreement(bookID)
 	if !found || !agreement.IsBorrowed() {
 		panic("book is not borrowed")
 	}
@@ -170,8 +172,8 @@ func GetBorrower(id collection.BookID) string {
 	return agreement.borrower.String()
 }
 
-func getAgreement(id collection.BookID) (*Agreement, bool) {
-	v, found := agreements.Get(id.String())
+func getAgreement(bookID book.ID) (*Agreement, bool) {
+	v, found := agreements.Get(bookID.String())
 	if !found {
 		return nil, false
 	}
@@ -179,8 +181,12 @@ func getAgreement(id collection.BookID) (*Agreement, bool) {
 	return v.(*Agreement), true
 }
 
-func assertBookIsAvailable(id collection.BookID) {
-	if IsBorrowed(id) || !collection.CheckAvailable(id) {
+func assertBookIsAvailable(bookID book.ID) {
+	if IsBorrowed(bookID) {
 		panic("books is already borrowed")
+	}
+
+	if library.IsLent(bookID) {
+		panic("books is not available to be borrowed")
 	}
 }

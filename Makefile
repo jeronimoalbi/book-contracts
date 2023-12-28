@@ -50,22 +50,22 @@ install-realm-page:
 			--remote="$(REMOTE)" \
 			$(KEY_NAME)
 
-# install-club:
-# 	@echo Adding club realm...
-# 	@gnokey maketx addpkg \
-# 			--pkgpath="gno.land/r/book/club" \
-# 			--pkgdir=r/book/club \
-# 			--deposit="1ugnot" \
-# 			--gas-fee="1ugnot" \
-# 			--gas-wanted="2000000" \
-# 			--broadcast="true" \
-# 			--chainid="dev" \
-# 			--remote="$(REMOTE)" \
-# 			$(KEY_NAME)
+install-realm-bookclub:
+	@echo Adding book club realm...
+	@gnokey maketx addpkg \
+			--pkgpath="gno.land/r/demo/jeronimoalbi/bookclub" \
+			--pkgdir=r/demo/jeronimoalbi/bookclub \
+			--deposit="1ugnot" \
+			--gas-fee="1ugnot" \
+			--gas-wanted="2000000" \
+			--broadcast="true" \
+			--chainid="dev" \
+			--remote="$(REMOTE)" \
+			$(KEY_NAME)
 
 install-packages: install-package-book
 
-install-realms: install-realm-library install-realm-page
+install-realms: install-realm-library install-realm-page install-realm-bookclub
 
 install: install-packages install-realms
 

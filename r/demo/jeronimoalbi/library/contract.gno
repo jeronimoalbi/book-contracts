@@ -82,6 +82,11 @@ func Lend(borrower std.Address, id book.ID) {
 	}
 }
 
+// IsLent checks if a book is currently lent.
+func IsLent(id book.ID) bool {
+	return library.IsLent(id)
+}
+
 // Return returns a book to its owner's collection.
 func Return(id book.ID) {
 	if err := library.Return(id); err != nil {

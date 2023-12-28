@@ -1,4 +1,4 @@
-package club
+package bookclub
 
 import (
 	"errors"
