@@ -23,6 +23,11 @@ type Library struct {
 	lentBooks   *avl.Tree // Book ID -> std.Address(borrower)
 }
 
+// Size returns the number of book collections in the library.
+func (self Library) Size() int {
+	return self.collections.Size()
+}
+
 // HasCollection checks if an address has a book collection.
 func (self Library) HasCollection(owner std.Address) bool {
 	_, found := self.collections.Get(owner.String())
@@ -49,7 +54,7 @@ func (self Library) AddCollection(owner std.Address, c *book.Collection) error {
 
 // IsLent checks if a book is currently lent.
 func (self Library) IsLent(bookID book.ID) bool {
-	return !self.lentBooks.Has(bookID.String())
+	return self.lentBooks.Has(bookID.String())
 }
 
 // Lend lends a book to a borrower address.
@@ -63,7 +68,7 @@ func (self Library) Lend(owner, borrower std.Address, bookID book.ID) error {
 		return errors.New("lender doesn't own the book")
 	}
 
-	self.lentBooks.Set(bookID.String(), borrower)
+	self.lentBooks.Set(bookID.String(), borrower.String())
 	return nil
 }
 
