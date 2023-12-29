@@ -18,6 +18,11 @@ type Collection struct {
 	books *avl.Tree // Book ID -> *Book
 }
 
+// Size returns the number of books in the collection.
+func (self Collection) Size() int {
+	return self.books.Size()
+}
+
 // Has checks if a book is part of the collection.
 func (self Collection) Has(bookID ID) bool {
 	return self.books.Has(bookID.String())
