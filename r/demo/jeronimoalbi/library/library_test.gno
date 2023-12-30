@@ -119,7 +119,7 @@ func TestLibraryLend(t *testing.T) {
 		},
 		{
 			name: "empty collection",
-			err:  "owner has no books",
+			err:  "lender has no books",
 			setup: func(l Library) book.ID {
 				// Don't add a collection for the current owner
 				return 42
@@ -248,6 +248,59 @@ func TestLibraryReturn(t *testing.T) {
 
 				if library.IsLent(bookID) {
 					t.Error("expected book to be returned")
+				}
+			}
+		})
+	}
+}
+
+func TestLibraryGetBook(t *testing.T) {
+	// Arrange
+	testBook := book.New(42, "Foo")
+	collection := book.NewCollection()
+	collection.Add(testBook)
+
+	owner := std.Address("g1jg8mtutu9khhfwc4nxmuhcpftf0pajdhfvsqf5")
+	library := New()
+	library.AddCollection(owner, collection)
+
+	cases := []struct {
+		name   string
+		bookID book.ID
+		book   *book.Book
+	}{
+		{
+			name:   "ok",
+			bookID: 42,
+			book:   testBook,
+		},
+		{
+			name:   "not found",
+			bookID: 999,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			b, found := library.GetBook(owner, tc.bookID)
+
+			// Assert
+			if tc.book == nil {
+				if b != nil {
+					t.Errorf("expected no book to be found, got: %d", b.ID())
+				}
+
+				if found {
+					t.Error("expected found to be false")
+				}
+			} else {
+				if b != testBook {
+					t.Errorf("expected book %d to be returned, got: %d", testBook.ID(), b.ID())
+				}
+
+				if !found {
+					t.Error("expected found to be true")
 				}
 			}
 		})

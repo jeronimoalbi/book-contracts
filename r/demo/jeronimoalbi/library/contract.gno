@@ -46,7 +46,7 @@ func Burn(id book.ID) {
 
 // Transfer a book from current account's collection to a different account.
 func Transfer(newOwner std.Address, id book.ID) {
-	assertBookIsAvailable(id)
+	assertBookIsNotLent(id)
 
 	owner := std.GetOrigCaller()
 	if owner == newOwner {
@@ -74,7 +74,7 @@ func Transfer(newOwner std.Address, id book.ID) {
 
 // Lend lends a book from current account's collection.
 func Lend(borrower std.Address, id book.ID) {
-	assertBookIsAvailable(id)
+	assertBookIsNotLent(id)
 
 	owner := std.GetOrigCaller()
 	if err := library.Lend(owner, borrower, id); err != nil {
@@ -103,12 +103,21 @@ func GetBorrower(id book.ID) string {
 	return borrower.String()
 }
 
+// GetBook returns a book that belongs to an owner account.
+func GetBook(owner std.Address, id book.ID) (book.Book, bool) {
+	b, found := library.GetBook(owner, id)
+	if !found {
+		return book.Book{}, false
+	}
+	return *b, true
+}
+
 func genBookID() book.ID {
 	bookCtr++
 	return book.ID(bookCtr)
 }
 
-func assertBookIsAvailable(id book.ID) {
+func assertBookIsNotLent(id book.ID) {
 	if library.IsLent(id) {
 		panic("book is lent")
 	}

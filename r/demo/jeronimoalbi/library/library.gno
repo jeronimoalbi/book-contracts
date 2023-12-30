@@ -61,7 +61,7 @@ func (self Library) IsLent(bookID book.ID) bool {
 func (self Library) Lend(owner, borrower std.Address, bookID book.ID) error {
 	collection, found := self.GetCollection(owner)
 	if !found {
-		return errors.New("owner has no books")
+		return errors.New("lender has no books")
 	}
 
 	if !collection.Has(bookID) {
@@ -94,4 +94,13 @@ func (self Library) Return(bookID book.ID) error {
 
 	self.lentBooks.Remove(bookID.String())
 	return nil
+}
+
+// GetBook returns a book that belongs to an owner account.
+func (self Library) GetBook(owner std.Address, bookID book.ID) (*book.Book, bool) {
+	collection, found := self.GetCollection(owner)
+	if found {
+		return collection.Get(bookID)
+	}
+	return nil, false
 }
