@@ -1,6 +1,7 @@
 package library
 
 import (
+	"fmt"
 	"std"
 	"strings"
 	"testing"
@@ -11,28 +12,28 @@ import (
 )
 
 func TestRender(t *testing.T) {
+	ownerWithoutBooks := testutils.TestAddress("render/owner2")
+
 	owner := testutils.TestAddress("render/owner")
+	bookID1 := createBook(t, owner, "Foo")
+	bookID2 := createBook(t, owner, "Bar")
+
 	std.TestSetOrigCaller(owner)
 
 	cases := []struct {
 		name   string
 		path   string
 		output string
-		setup  func(*testing.T)
 	}{
 		{
 			name:   "empty collection",
-			path:   owner.String(),
+			path:   ownerWithoutBooks.String(),
 			output: "Book collection is empty",
 		},
 		{
 			name:   "ok",
 			path:   owner.String(),
-			output: "[#1] Foo\\n[#2] Bar\\n",
-			setup: func(t *testing.T) {
-				createBook(t, owner, "Foo")
-				createBook(t, owner, "Bar")
-			},
+			output: fmt.Sprintf("[#%d] Foo\\n[#%d] Bar\\n", bookID1, bookID2),
 		},
 		{
 			name:   "not found",
@@ -43,11 +44,6 @@ func TestRender(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Arrange
-			if tc.setup != nil {
-				tc.setup(t)
-			}
-
 			// Act
 			output := contract.Render(tc.path)
 			output = strings.ReplaceAll(output, "\n", "\\n")
