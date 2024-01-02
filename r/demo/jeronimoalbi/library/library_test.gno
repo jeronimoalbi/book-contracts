@@ -36,7 +36,9 @@ func TestLibraryAddCollection(t *testing.T) {
 
 			// Assert
 			if tc.err != "" {
-				if v := err.Error(); v != tc.err {
+				if err == nil {
+					t.Errorf("expected error '%s' to be returned", tc.err)
+				} else if v := err.Error(); v != tc.err {
 					t.Errorf("expected error '%s', got: '%v'", tc.err, err)
 				}
 
@@ -152,7 +154,9 @@ func TestLibraryLend(t *testing.T) {
 
 			// Assert
 			if tc.err != "" {
-				if v := err.Error(); v != tc.err {
+				if err == nil {
+					t.Errorf("expected error '%s' to be returned", tc.err)
+				} else if v := err.Error(); v != tc.err {
 					t.Errorf("expected error '%s', got: '%s'", tc.err, v)
 				}
 
@@ -165,7 +169,7 @@ func TestLibraryLend(t *testing.T) {
 				}
 			} else {
 				if err != nil {
-					t.Errorf("expected no error, got: %v", err)
+					t.Errorf("expected no error, got: %s", err.Error())
 				}
 
 				if !library.IsLent(bookID) {
@@ -238,12 +242,14 @@ func TestLibraryReturn(t *testing.T) {
 
 			// Assert
 			if tc.err != "" {
-				if v := err.Error(); v != tc.err {
+				if err == nil {
+					t.Errorf("expected error '%s' to be returned", tc.err)
+				} else if v := err.Error(); v != tc.err {
 					t.Errorf("expected error '%s', got: '%v'", tc.err, v)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("expected no error, got: %v", err)
+					t.Errorf("expected no error, got: %s", err.Error())
 				}
 
 				if library.IsLent(bookID) {
