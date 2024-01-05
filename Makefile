@@ -27,6 +27,20 @@ install-package-book:
 			-insecure-password-stdin \
 			$(KEY_NAME) <<< "$(KEY_PASSWORD)"
 
+install-package-testhelpers:
+	@echo Adding testhelpers package...
+	@gnokey maketx addpkg \
+			-pkgpath="gno.land/p/demo/jeronimoalbi/testhelpers" \
+			-pkgdir="p/demo/jeronimoalbi/testhelpers" \
+			-deposit="1ugnot" \
+			-gas-fee="1ugnot" \
+			-gas-wanted="2000000" \
+			-chainid="dev" \
+			-remote="$(REMOTE)" \
+			-broadcast \
+			-insecure-password-stdin \
+			$(KEY_NAME) <<< "$(KEY_PASSWORD)"
+
 install-realm-library:
 	@echo Adding library realm...
 	@gnokey maketx addpkg \
@@ -69,7 +83,7 @@ install-realm-bookclub:
 			-insecure-password-stdin \
 			$(KEY_NAME) <<< "$(KEY_PASSWORD)"
 
-install-packages: install-package-book
+install-packages: install-package-book install-package-testhelpers
 
 install-realms: install-realm-library install-realm-page install-realm-bookclub
 
