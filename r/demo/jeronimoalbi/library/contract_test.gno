@@ -360,6 +360,8 @@ func createBook(t *testing.T, owner std.Address, title string) book.ID {
 }
 
 func assertPanicReason(t *testing.T, expected, actual string) {
+	t.Helper()
+
 	if expected != actual {
 		t.Errorf("expected panic with '%s', got: '%s'", expected, actual)
 	}
