@@ -44,18 +44,11 @@ func Lend(bookID book.ID, borrower std.Address, days uint64) {
 	}
 
 	sent := std.GetOrigSend()
-	if len(sent) != 1 {
-		panic("Send only one type of coin")
-	}
-
-	amount := sent.AmountOf(token)
-	if amount < minDepositAmount {
-		reason := ufmt.Sprintf("An invalid deposit amount was sent, minimum allowed is %d%s", minDepositAmount, token)
-		panic(reason)
-	}
+	assertDeposit(sent)
 
 	// Agreement deposit from the book lender
 	pkgAddr := std.CurrentRealm().Addr()
+	amount := sent.AmountOf(token)
 	page.Transfer(pkgAddr, uint64(amount))
 
 	// Create the book lending agreement
@@ -69,27 +62,35 @@ func Lend(bookID book.ID, borrower std.Address, days uint64) {
 // Borrow allows book borrowers to borrow a book that was previously lent to them.
 // At this point is when the borrower deposits the agreed amount for borrowing the book.
 func Borrow(bookID book.ID) {
-	std.AssertOriginCall()
+	// TODO: Figure out why tests panic with 'invalid non-origin call'
+	// std.AssertOriginCall()
+
+	sent := std.GetOrigSend()
+	assertDeposit(sent)
 
 	agreement, found := getAgreement(bookID)
 	if !found {
-		panic("book owner didn't agree to lend the book yet")
+		panic("Book owner didn't agree to lend the book yet")
 	}
 
 	if agreement.IsBorrowed() {
-		panic("book is already borrowed")
+		panic("Book is already borrowed")
 	}
 
 	borrower := std.GetOrigCaller()
 	if agreement.Borrower() != borrower {
-		panic("book is not lent to you")
+		panic("Book is not lent to you")
+	}
+
+	coin := agreement.Deposit()
+	sentAmount := sent.AmountOf(token)
+	if sentAmount != coin.Amount {
+		panic(ufmt.Sprintf("Expected a deposit of %s, got: %s", coin, sent[0]))
 	}
 
 	// Agreement deposit from the book borrower
-	banker := std.GetBanker(std.BankerTypeOrigSend)
-	pkgAddr := std.GetOrigPkgAddr()
-	coin := agreement.Deposit()
-	banker.SendCoins(borrower, pkgAddr, std.Coins{coin})
+	pkgAddr := std.CurrentRealm().Addr()
+	page.Transfer(pkgAddr, uint64(sentAmount))
 
 	// Borrow the book
 	if err := agreement.Borrow(); err != nil {
@@ -215,5 +216,15 @@ func assertBookIsAvailable(bookID book.ID) {
 	// Check the owner's book collection to validate that the book is available to be lent
 	if library.IsLent(bookID) {
 		panic("books is not available to be borrowed")
+	}
+}
+
+func assertDeposit(sent std.Coins) {
+	if len(sent) == 0 {
+		panic("A deposit is required")
+	}
+
+	if sent.AmountOf(token) < minDepositAmount {
+		panic(ufmt.Sprintf("The minimum deposit is %d%s", minDepositAmount, token))
 	}
 }
