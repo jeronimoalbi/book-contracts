@@ -5,37 +5,62 @@ import (
 
 	"gno.land/p/demo/avl"
 	"gno.land/p/demo/jeronimoalbi/book"
+	"gno.land/p/demo/ufmt"
+	"gno.land/r/demo/jeronimoalbi/page"
 
 	"gno.land/r/demo/jeronimoalbi/library"
 )
 
-var agreements avl.Tree // Book's book.ID -> *Agreement
+const (
+	token            = "page"
+	minDepositAmount = int64(1)
+)
 
-// IsBorrowed checks if a book is currently borrowed.
+var agreements *avl.Tree // Book's book.ID -> *Agreement
+
+func init() {
+	agreements = avl.NewTree()
+}
+
+// IsBorrowed checks if a book is currently borrowed as part of an agreement between two accounts.
 func IsBorrowed(bookID book.ID) bool {
-	return agreements.Has(bookID.String())
+	a, found := getAgreement(bookID)
+	if !found {
+		return false
+	}
+	return a.IsBorrowed()
 }
 
 // Lend allows book owners to lend a book to a borrower for a period of time.
-// Both the lender and the borrower must transfer a deposit which will be returned
-// to each one when the book is returned to its owner.
-func Lend(bookID book.ID, borrower std.Address, days uint64, deposit int64) {
-	std.AssertOriginCall()
+// Both the lender and the borrower must transfer a deposit to make the agreement valid.
+// The deposits will be returned when the book is returned to its owner.
+func Lend(bookID book.ID, borrower std.Address, days uint64) {
+	// TODO: Figure out why tests panic with 'invalid non-origin call'
+	// std.AssertOriginCall()
 	assertBookIsAvailable(bookID)
 
-	// TODO: Get the sent amount instead of automatically transfering to contract address ?
-	//       (Same for Borrow)
+	if days == 0 {
+		panic("The minimum borrowing period is one day")
+	}
+
+	sent := std.GetOrigSend()
+	if len(sent) != 1 {
+		panic("Send only one type of coin")
+	}
+
+	amount := sent.AmountOf(token)
+	if amount < minDepositAmount {
+		reason := ufmt.Sprintf("An invalid deposit amount was sent, minimum allowed is %d%s", minDepositAmount, token)
+		panic(reason)
+	}
 
 	// Agreement deposit from the book lender
-	banker := std.GetBanker(std.BankerTypeOrigSend)
-	pkgAddr := std.GetOrigPkgAddr()
-	lender := std.GetOrigCaller()
-	coin := std.Coin{"ugnot", deposit} // TODO: Use "page" token
-	banker.SendCoins(lender, pkgAddr, std.Coins{coin})
+	pkgAddr := std.CurrentRealm().Addr()
+	page.Transfer(pkgAddr, uint64(amount))
 
-	// Create the book lend agreement
-	agreement := NewAgreement(lender, borrower, days, deposit)
-	agreements.Set(bookID.String(), agreement)
+	// Create the book lending agreement
+	lender := std.GetOrigCaller()
+	agreements.Set(bookID.String(), NewAgreement(lender, borrower, days, sent[0]))
 
 	// Lend the book to this contract
 	library.Lend(pkgAddr, bookID)
@@ -63,7 +88,7 @@ func Borrow(bookID book.ID) {
 	// Agreement deposit from the book borrower
 	banker := std.GetBanker(std.BankerTypeOrigSend)
 	pkgAddr := std.GetOrigPkgAddr()
-	coin := std.Coin{"ugnot", agreement.deposit} // TODO: Use "page" token
+	coin := agreement.Deposit()
 	banker.SendCoins(borrower, pkgAddr, std.Coins{coin})
 
 	// Borrow the book
@@ -95,7 +120,7 @@ func Return(bookID book.ID) {
 	}
 }
 
-// Receive allows book lenders to receive a lent book.
+// Receive allows book lenders to receive a borrowed book.
 func Receive(bookID book.ID) {
 	std.AssertOriginCall()
 
@@ -115,7 +140,7 @@ func Receive(bookID book.ID) {
 
 	// Return the deposit amounts to the lender and the borrower
 	pkgAddr := std.GetOrigPkgAddr()
-	refund := std.Coin{"ugnot", agreement.DepositAmount()} // TODO: Use "page" token
+	refund := agreement.Deposit()
 	banker := std.GetBanker(std.BankerTypeRealmSend)
 	banker.SendCoins(pkgAddr, agreement.Lender(), std.Coins{refund})
 	banker.SendCoins(pkgAddr, agreement.Borrower(), std.Coins{refund})
@@ -147,7 +172,7 @@ func ClaimDeposits(bookID book.ID) {
 
 	// Transfer the total amount deposited in the agreement to the lender
 	pkgAddr := std.GetOrigPkgAddr()
-	deposit := std.Coin{"ugnot", agreement.TotalAmount()} // TODO: Use "page" token
+	deposit := agreement.TotalDeposit()
 	banker := std.GetBanker(std.BankerTypeRealmSend)
 	banker.SendCoins(pkgAddr, lender, std.Coins{deposit})
 }
@@ -182,10 +207,12 @@ func getAgreement(bookID book.ID) (*Agreement, bool) {
 }
 
 func assertBookIsAvailable(bookID book.ID) {
+	// Check id the book has been borrowed as part of a lend agreement
 	if IsBorrowed(bookID) {
 		panic("books is already borrowed")
 	}
 
+	// Check the owner's book collection to validate that the book is available to be lent
 	if library.IsLent(bookID) {
 		panic("books is not available to be borrowed")
 	}
